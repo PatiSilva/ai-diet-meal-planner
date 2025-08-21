@@ -15,3 +15,7 @@ env/
 # Logs / misc
 *.log
 
+
+# secrets
+.env
+task/.env
