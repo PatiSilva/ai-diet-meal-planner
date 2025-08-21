@@ -19,3 +19,18 @@ env/
 # secrets
 .env
 task/.env
+
+# secrets & envs
+.env
+task/.env
+# venvs
+.venv/
+venv/
+task/.venv/
+# backups
+*.zip
+*backup*.zip
+# IDE/OS
+.idea/
+.vscode/
+.DS_Store
