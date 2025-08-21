@@ -1,2 +1,20 @@
 .venv/
 .idea/
+# Python
+__pycache__/
+*.py[cod]
+*.egg-info/
+.env
+.venv/
+venv/
+env/
+
+# IDE
+.idea/
+.vscode/
+
+# OS
+.DS_Store
+
+# Project-specific
+*.log
