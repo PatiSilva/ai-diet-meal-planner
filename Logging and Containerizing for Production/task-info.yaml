@@ -1,0 +1,24 @@
+type: edu
+files:
+  - name: main.py
+    visible: true
+    learner_created: false
+  - name: test/__init__.py
+    visible: false
+    learner_created: false
+  - name: test/tests.py
+    visible: false
+    learner_created: false
+  - name: tests.py
+    visible: false
+    learner_created: false
+  - name: run_tests.sh
+    visible: true
+    learner_created: true
+feedback_link: https://hyperskill.org/projects/530/stages/3093/implement#comment
+status: Unchecked
+feedback:
+  message: "No tests have run. For more information, see <a href=\"https://plugins.jetbrains.com/plugin/10081-jetbrains-academy/docs/troubleshooting-guide.html#no_tests_have_run\"\
+    >the Troubleshooting guide</a>"
+  time: "Thu, 21 Aug 2025 18:39:48 UTC"
+record: 5

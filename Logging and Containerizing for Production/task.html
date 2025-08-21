@@ -1,0 +1,27 @@
+<div class="step-text">
+<p>Now that your multi-agent pipeline is working properly, it's time to get it ready for the real world.</p><h5 id="theory">Theory</h5><p>Moving from development to production involves much more than just making sure things work. Reliability, portability, and observability become key concerns. Real-world software needs to run consistently across different environments, handle errors gracefully, and give clear insights into how it's working. Two essential practices to achieve this are logging and containerization.</p><p><strong>Logging</strong> provides detailed records about how your application behaves while running. By recording important events, request details, responses, and any errors that come up, developers can quickly figure out what's wrong, keep an eye on the application's health, and ensure reliability. Good logging makes debugging easier, reducing downtime and improving the user experience.</p><p><strong>Containerization</strong>, especially with Docker, addresses portability and deployment consistency. Containers package your application with all its dependencies into a single image, ensuring it behaves the same way on any platform. This gets rid of the classic "it works on my machine" problem and streamlines deployment, allowing quick scaling, simpler updates, and efficient management.</p><h5 id="description">Description</h5><p>In this stage, you'll make your AI Diet &amp; Meal Planner production-ready by adding logging and packaging it into a Docker container.</p><p>You will:</p><ul><li><p>Implement structured logging for each endpoint (<code class="language-python">/ask</code>, <code class="language-python">/plan</code>, <code class="language-python">/recommend</code>), capturing inputs and key results clearly.</p></li><li><p>Centralize logging configuration to keep things consistent and reusable across your modules.</p></li><li><p>Containerize the app using Docker, so your service can be easily deployed on any platform or cloud provider.</p></li></ul><p>By the end of this stage, your multi-agent application will have clear runtime visibility through logs, and seamless portability with Docker, meeting industry-standard production requirements.</p><h5 id="objectives">Objectives</h5><ul><li><p>Set up centralized logging:</p><ul><li><p>Create a utility script (<code class="language-python">app/logging.py</code>) to configure a structured logger.</p></li></ul><pre><code class="language-python">import logging
+
+def get_logger(name: str) -&gt; logging.Logger:
+    logger = logging.getLogger(name)
+    logger.setLevel(logging.INFO)
+
+    if not logger.handlers:
+        handler = logging.StreamHandler()
+        handler.setFormatter(logging.Formatter(
+            '%(asctime)s - %(name)s - %(levelname)s - %(message)s'
+        ))
+        logger.addHandler(handler)
+
+    return logger</code></pre><ul><li><p>Make sure all endpoints consistently log important request and response data clearly.</p></li></ul><pre><code class="language-python">from app.logging import get_logger
+logger = get_logger("app")
+
+@app.post("/ask") # example for one API endpoint
+def ask_handler(input: AskInput):
+    logger.info("Received /ask request: items=%s, diet=%s", input.items, input.diet)
+    result = ManagerAgent().run(input.items, input.diet)
+    logger.info("/ask response: suggestions=%s", result["suggestions"])
+    return result</code></pre></li><li><p>Add detailed logs to endpoints:</p><ul><li><p><code class="language-python">/ask</code>: Log incoming <code class="language-python">items</code> and <code class="language-python">diet</code>, and resulting <code class="language-python">suggestions</code>.</p></li><li><p><code class="language-python">/plan</code>: Log incoming <code class="language-python">base_recipe</code>, and the resulting recipe <code class="language-python">title</code>.</p></li><li><p><code class="language-python">/recommend</code>: Log input parameters (<code class="language-python">items</code>, <code class="language-python">diet</code>, <code class="language-python">recipe_count</code>) and the number of recipes returned.</p></li></ul></li><li><p>Write a Dockerfile:</p><ul><li><p>Base your image on Python 3.12.</p></li><li><p>Install dependencies.</p></li><li><p>Expose and run your FastAPI app via Uvicorn on port <code class="language-python">8000</code>.</p></li></ul></li><li><p>Check container functionality:</p><ul><li><p>Build and run your Docker container locally.</p></li><li><p>Make sure endpoints respond correctly and logs appear clearly in the container logs.</p></li></ul></li></ul><h5 id="example">Example</h5><p>Build your Docker image:</p><pre><code class="language-bash"># Build your Docker image
+docker build -t ai-diet-planner .</code></pre><p>Run your Docker container:</p><pre><code class="language-bash"># Run your Docker container
+docker run --name ai-diet-planner -p 8000:8000 ai-diet-planner:latest</code></pre><p>Test your running container:</p><pre><code class="language-bash"># Test the container
+curl http://localhost:8000/</code></pre><p>You should see:</p><pre><code class="language-json">{"message":"Success!"}</code></pre><p>You'll also see logs clearly appearing in your terminal showing requests and results from endpoints.</p>
+</div>

@@ -1,0 +1,24 @@
+# Web framework
+fastapi
+uvicorn[standard]
+
+# HTTP clients
+requests
+httpx
+
+# Data validation & settings
+pydantic
+python-dotenv
+
+# LLMs (optional for your project)
+openai
+groq
+
+# Dev tools
+pytest
+black
+flake8
+
+# Hyperskill test harness
+hstest
+

@@ -1,0 +1,54 @@
+<div class="step-text">
+<p>Now that your FastAPI playground is ready, let's teach two specialized agents to use an LLM and return structured JSON.</p><h5 id="theory">Theory</h5><p>Agents are basically specialized software that handle specific, isolated tasks within larger systems. They use large language models (LLMs), APIs, or databases, and their main feature is structured communication and modular design. Instead of building one complex system, using multiple agents makes development simpler, improves reusability, and makes debugging easier. Each agent handles one clearly defined function, like answering questions or filtering data. Agents usually communicate through data structures (mostly JSON), making it easy to add them into larger pipelines or workflows.</p><p>By the end of this stage, you'll have two working agents that talk directly with Groq's LLM service to deliver structured, JSON-formatted responses.</p><h5 id="description">Description</h5><p>In this stage, you'll set up two agents: the Inventory Agent and the Diet Agent.</p><ul><li><p>The Inventory Agent takes user input (a list of groceries) and checks this data, removing any unusable or blank entries. It then outputs a cleaned list of ingredients ready for the next step.</p></li><li><p>The Diet Agent takes the cleaned ingredient list, applies dietary rules (like Vegan, Keto, Mediterranean, Gluten-Free, or Paleo), and then suggests diet-friendly meal ideas using those ingredients.</p></li></ul><p>Both Agents will talk to Groq's LLM through structured prompts and turn the responses into clearly defined JSON. You need to set up your Groq API key and create endpoints to expose each agent's functionality through FastAPI. Here is the Groq API quickstart:</p><ul><li><p>Sign up at <a href="https://console.groq.com/" rel="noopener noreferrer nofollow" target="_blank">https://console.groq.com</a> and get your API key from the "API Keys" section.</p></li><li><p>Use the free model <code class="language-python">llama3-8b-8192</code>, which supports JSON-object responses via <code class="language-python">response_format</code>.</p></li></ul><p>Create a <code class="language-python">.env</code> file at your project root:</p><pre><code class="language-no-highlight">LLM_API_KEY=your-actual-groq-key</code></pre><p>Since this project will use LLM requests often, we need to make sure all these requests go through the same <code class="language-python">LLMClient</code> service. Specifically <code class="language-python">app/services/llm_client.py</code>. Send prompts to <a href="https://api.groq.com/openai/v1/chat/completions" rel="noopener noreferrer nofollow" target="_blank">https://api.groq.com/openai/v1/chat/completions</a> and parse the JSON output.</p><p>Here is the signature of the <code class="language-python">LLMClient()</code> class:</p><pre><code class="language-python">class LLMClient:
+    def __init__(self):
+        self.api_key = os.getenv("LLM_API_KEY")
+        self.api_url = # the OpenAI-compatible LLM endpoint
+        self.model = # name of the model
+
+    def call_model_json(self, prompt: str) -&gt; Dict[str, Any]:
+        ... </code></pre><p>After creating the LLM Client service, build prompts for Agents in this format:</p><ul><li><p><code class="language-python">app/agents/inventory_agent.py</code>: Prompt the LLM to return</p><pre><code class="language-json">{"usable_items": [...], "message": "..."}</code></pre></li><li><p><code class="language-python">app/agents/diet_agent.py</code>: Prompt the LLM to return</p><pre><code class="language-json">{"compatible_items": [...], "suggested_recipe_ideas": [...]}</code></pre></li></ul><p>Here is the class signature you can adapt for the <code class="language-python">InventoryAgent()</code> and <code class="language-python">DietAgent()</code>:</p><pre><code class="language-python">class Agent:
+    def __init__(self):
+        self.llm = LLMClient()
+
+    def run(self, ...) -&gt; ModelResponse:
+        ...</code></pre><p>The sample prompt that can be used for the Inventory Agent can look as follows:</p><pre><code class="language-python">prompt = (
+            f"You are a kitchen assistant. Given the JSON array of ingredients:\n"
+            f"{items}\n"
+            "Return a JSON object with:\n"
+            "  usable_items: an array of ingredients that are non-empty and suitable for cooking (remove blank or invalid entries),\n"
+            "  message: a short confirmation string.\n"
+            "Respond ONLY with valid JSON."
+        )</code></pre><p>The return Pydantic objects for these routes will look like</p><pre><code class="language-python">from pydantic import BaseModel
+from typing import List
+
+class InventoryResponse(BaseModel):
+    usable_items: List[str]
+    message: str
+
+class DietResponse(BaseModel):
+    compatible_items: List[str]
+    suggested_recipe_ideas: List[str]</code></pre><p>Now, we can create the endpoints. For both agents, we'll have separate endpoints in <code class="language-python">main.py</code>:</p><ul><li><p>Use Pydantic models (<code class="language-python">InventoryResponse</code> and <code class="language-python">DietResponse</code>) for JSON schema validation.</p></li><li><p><code class="language-python">POST /inventory</code> → accepts <code class="language-python">{"items": [...]}</code> → returns <code class="language-python">InventoryResponse</code>.</p></li><li><p><code class="language-python">POST /diet</code> → accepts <code class="language-python">{"items": [...], "diet": "&lt;type&gt;"}</code> → returns <code class="language-python">DietResponse</code>.</p></li></ul><p>The Pydantic objects for the inputs are defined as follows:</p><pre><code class="language-python">class InventoryInput(BaseModel):
+    items: List[str]
+
+class DietInput(BaseModel):
+    items: List[str]
+    diet: str</code></pre><h5 id="objectives">Objectives</h5><ul><li><p>Sign up at Groq API, set up your environment to use the Groq API key (<code class="language-python">LLM_API_KEY</code>) via <code class="language-python">.env</code>.</p></li><li><p>Create and implement the <code class="language-python">LLMClient</code> class to talk to Groq's <code class="language-python">llama3-8b-8192</code> and handle structured JSON responses.</p></li><li><p>Implement the <code class="language-python">InventoryAgent</code> to filter out unusable ingredients and return a valid <code class="language-python">InventoryResponse</code>.</p></li><li><p>Implement the <code class="language-python">DietAgent</code> to apply dietary restrictions, filter ingredients, and provide exactly five suggested recipes in a valid <code class="language-python">DietResponse</code>.</p></li><li><p>Define appropriate FastAPI endpoints (<code class="language-python">/inventory</code>, <code class="language-python">/diet</code>) using Pydantic input and output models.</p></li></ul><h5 id="example">Example</h5><p><strong>Example 1: Inventory Agent Endpoint</strong></p><p>Request:</p><pre><code class="language-bash"># request example
+curl -X POST http://localhost:8000/inventory \
+     -H 'Content-Type: application/json' \
+     -d '{"items":["tomato"," ","chicken","spinach",""]}'</code></pre><p>Expected Response:</p><pre><code class="language-json">{
+  "usable_items": ["tomato", "chicken", "spinach"],
+  "message": "Filtered usable items successfully."
+}</code></pre><p><strong>Example 2: Diet Agent Endpoint</strong></p><p>Request:</p><pre><code class="language-bash"># Request Example
+curl -X POST http://localhost:8000/diet \
+     -H 'Content-Type: application/json' \
+     -d '{"items":["tomato","chicken","spinach"],"diet":"vegan"}'</code></pre><p>Expected Response:</p><pre><code class="language-json">{
+  "compatible_items": ["tomato", "spinach"],
+  "suggested_recipe_ideas": [
+    "Vegan Tomato Spinach Salad",
+    "Tomato Spinach Pasta",
+    "Spinach &amp; Tomato Wraps",
+    "Tomato-Spinach Soup",
+    "Grilled Tomato &amp; Spinach Bruschetta"
+  ]
+}</code></pre><p>To submit this stage for a test, you have to run the FastAPI server from the terminal with the following command (here, main is the name of the file, <a href="https://main.py" rel="noopener noreferrer nofollow" target="_blank">main.py</a>, and app is the previously defined name of the FastAPI server):</p><pre><code class="language-python">uvicorn main:app --reload</code></pre><p>Once the server is running, you can submit the solution.</p>
+</div>

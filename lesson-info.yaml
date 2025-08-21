@@ -1,0 +1,8 @@
+type: framework
+content:
+  - Set up the playground
+  - Build the inventory and diet assistants
+  - Agents orchestration
+  - Building final recipe planner
+  - Logging and Containerizing for Production
+current_task: 4

@@ -1,0 +1,54 @@
+<div class="step-text">
+<p>Now that you can filter your pantry and diet constraints with <code class="language-python">/ask</code>, it's time to generate complete recipes. You'll build the Planner Agent, create JSON-only prompts, and set up two endpoints - <code class="language-python">/plan</code> and <code class="language-python">/recommend</code> - to deliver fully structured meal plans.</p><h5 id="theory">Theory</h5><p>Finally it is time to create detailed, step-by-step recipes. This is where your <strong>Planner Agent</strong> is introduced. Unlike your previous agents that mainly filtered and refined data, the Planner Agent will create brand new, structured content from scratch.</p><p>In the bigger picture of AI workflows, agents that create content (often called generative agents) play an important role. They take data from earlier steps, use prompt-engineering techniques, and produce outputs that are ready for users.</p><p>Prompt engineering for generative agents is a complicated problem. It's about giving the language model clear instructions on exactly how the output should look, spelling out the exact fields, data types, and response structure needed. Clear and specific prompts greatly improve the reliability and accuracy of generated results.</p><p>For your AI Diet &amp; Meal Planner, the Planner Agent will take a basic meal idea from previous agents and turn it into a complete, ready-to-follow recipe. This recipe includes a title, ingredients list, and step-by-step cooking instructions. This stage shows how structured generative AI works in real-world products like meal planning apps, virtual cooking assistants, and personalized nutrition services.</p><h5 id="description">Description</h5><p>You'll implement the <strong>Planner Agent</strong>, which transforms simple meal ideas into fully structured cooking recipes using the same Groq language model (<code class="language-python">llama3-8b-8192</code>). This agent will communicate through strictly defined JSON prompts, parse the LLM's response, and provide complete recipes directly to users through two new FastAPI endpoints:</p><ul><li><p><code class="language-python">POST /plan</code>: Takes a basic recipe idea (like "Vegan Stir Fry") and returns a detailed cooking plan (the <code class="language-python">RecipeResponse()</code> class defined below)</p></li><li><p><code class="language-python">POST /recommend</code>: Combines what your previous agents do (<code class="language-python">/ask</code>) with the Planner Agent (<code class="language-python">/plan</code>) to generate up to five complete recipes at once.</p></li></ul><div class="alert alert-primary"><p>Your Planner Agent's LLM prompt must clearly outline the expected JSON structure, ensuring solid and predictable responses that fit exactly into your Pydantic-defined data models</p></div><h5 id="objectives">Objectives</h5><ul><li><p>Implement the <strong>Planner Agent</strong> (<code class="language-python">PlannerAgent</code>) to:</p><ul><li><p>Create structured JSON-only prompts for Groq's LLM.</p></li><li><p>Parse and normalize the LLM's output into a defined schema, handling differences in ingredient and step formatting.</p></li></ul></li><li><p>Define the additional Pydantic models (<code class="language-python">app/models.py</code>):</p><pre><code class="language-python">class RecipeStep(BaseModel):
+    step_number: int
+    instruction: str
+
+class RecipeResponse(BaseModel):
+    title: str
+    ingredients: List[str]
+    steps: List[RecipeStep]</code></pre></li><li><p>Add two structured FastAPI endpoints:</p><ul><li><p><code class="language-python">POST /plan</code>: Accepts <code class="language-python">{"base_recipe": "&lt;meal name&gt;"}</code> and returns one detailed <code class="language-python">RecipeResponse</code>.</p></li><li><p><code class="language-python">POST /recommend</code>: Accepts a user's inventory and diet constraints and returns multiple complete <code class="language-python">RecipeResponse</code> items by linking your previously developed <code class="language-python">/ask</code> and <code class="language-python">/plan</code> endpoints.</p></li></ul></li></ul><p>The input for the <code class="language-python">/plan</code> route has the following format:</p><pre><code class="language-python">class PlanInput(BaseModel):
+    base_recipe: str</code></pre><h5 id="example">Example</h5><p>Example 1: Single Recipe Planning<strong> </strong>(<code class="language-python">/plan</code>)</p><p>Request:</p><pre><code class="language-bash"># Request example
+curl -X POST http://localhost:8000/plan \
+  -H "Content-Type: application/json" \
+  -d '{"base_recipe":"Vegan Stir Fry"}'</code></pre><p>Expected response:</p><pre><code class="language-json">{
+  "title": "Vegan Stir Fry Deluxe",
+  "ingredients": ["tofu", "bell pepper", "soy sauce", "garlic", "oil"],
+  "steps": [
+    { "step_number": 1, "instruction": "Press and cube the tofu." },
+    { "step_number": 2, "instruction": "Heat oil in a pan and sauté garlic." },
+    { "step_number": 3, "instruction": "Add tofu and cook until lightly browned." },
+    { "step_number": 4, "instruction": "Add bell pepper slices and stir-fry for 5 minutes." },
+    { "step_number": 5, "instruction": "Add soy sauce and stir well. Cook for another 2 minutes." },
+    { "step_number": 6, "instruction": "Serve hot over rice or noodles." }
+  ]
+}</code></pre><p>Example 2: Recipe recommendations (<code class="language-python">/recommend</code>)</p><p>Request:</p><pre><code class="language-bash"># Request example
+curl -X POST http://localhost:8000/recommend \
+  -H "Content-Type: application/json" \
+  -d '{"items":["tofu","bell pepper","garlic","oil"],"diet":"vegan","recipe_count":2}'</code></pre><p>Expected response:</p><pre><code class="language-json">{
+  "recipes": [
+    {
+      "title": "Vegan Garlic Pepper Tofu",
+      "ingredients": ["tofu", "bell pepper", "garlic", "oil"],
+      "steps": [
+        { "step_number": 1, "instruction": "Slice tofu into cubes." },
+        { "step_number": 2, "instruction": "Heat oil, sauté garlic until fragrant." },
+        { "step_number": 3, "instruction": "Add tofu, stir-fry until golden." },
+        { "step_number": 4, "instruction": "Add bell peppers, cook until tender." },
+        { "step_number": 5, "instruction": "Serve hot with rice or quinoa." }
+      ]
+    },
+    {
+      "title": "Quick Vegan Tofu &amp; Bell Pepper Stir Fry",
+      "ingredients": ["tofu", "bell pepper", "garlic", "oil"],
+      "steps": [
+        { "step_number": 1, "instruction": "Cut tofu and peppers into strips." },
+        { "step_number": 2, "instruction": "Warm oil in skillet, sauté garlic." },
+        { "step_number": 3, "instruction": "Cook tofu strips until crispy." },
+        { "step_number": 4, "instruction": "Add peppers and stir-fry quickly." },
+        { "step_number": 5, "instruction": "Serve immediately with noodles or salad." }
+      ]
+    }
+  ]
+}
+</code></pre><p>To submit this stage for a test, you have to run the FastAPI server from the terminal with the following command (here, main is the name of the file, <a href="https://main.py" rel="noopener noreferrer nofollow" target="_blank">main.py</a>, and app is the previously defined name of the FastAPI server):</p><pre><code class="language-python">uvicorn main:app --reload</code></pre><p>Once the server is running, you can submit the solution.</p>
+</div>
