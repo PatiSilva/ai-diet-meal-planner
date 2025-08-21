@@ -32,3 +32,13 @@ task/.venv/
 .idea/
 .vscode/
 .DS_Store
+
+# venv/IDE
+.task-venv/
+.venv/
+venv/
+task/.venv/
+__pycache__/
+.idea/
+.vscode/
+.DS_Store
