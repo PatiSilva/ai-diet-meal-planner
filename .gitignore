@@ -34,3 +34,20 @@ task/.venv/
 .idea/
 .vscode/
 .DS_Store
+
+# secrets & envs
+.env
+task/.env
+# venvs
+.venv/
+venv/
+task/.venv/
+# backups
+*.zip
+*backup*.zip
+# bytecode
+__pycache__/
+# IDE/OS
+.idea/
+.vscode/
+.DS_Store
