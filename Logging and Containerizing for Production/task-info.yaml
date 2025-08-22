@@ -12,13 +12,10 @@ files:
   - name: tests.py
     visible: false
     learner_created: false
-  - name: run_tests.sh
-    visible: true
-    learner_created: true
 feedback_link: https://hyperskill.org/projects/530/stages/3093/implement#comment
-status: Unchecked
+status: Solved
 feedback:
-  message: "No tests have run. For more information, see <a href=\"https://plugins.jetbrains.com/plugin/10081-jetbrains-academy/docs/troubleshooting-guide.html#no_tests_have_run\"\
-    >the Troubleshooting guide</a>"
-  time: "Thu, 21 Aug 2025 18:39:48 UTC"
+  message: Well done! You've finished the project. Select a new project on <a href="https://hyperskill.org/projects">Hyperskill</a>
+    to continue learning.
+  time: "Fri, 22 Aug 2025 17:51:46 UTC"
 record: 5

@@ -4,8 +4,10 @@ import json
 import re
 from typing import Any, Dict, Optional
 
-from dotenv import load_dotenv
-load_dotenv()
+# app/services/llm_client.py
+from dotenv import load_dotenv; load_dotenv()
+import os
+API_KEY = os.getenv("GROQ_API_KEY") or os.getenv("LLM_API_KEY")
 
 try:
     # pip install groq
